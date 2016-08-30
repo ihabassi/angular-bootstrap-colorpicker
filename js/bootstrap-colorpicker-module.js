@@ -266,6 +266,7 @@ angular.module('colorpicker.module', [])
         restrict: 'A',
         link: function ($scope, elem, attrs, ngModel) {
           var
+              oldColor,
               thisFormat = attrs.colorpicker ? attrs.colorpicker : 'hex',
               position = angular.isDefined(attrs.colorpickerPosition) ? attrs.colorpickerPosition : 'bottom',
               inline = angular.isDefined(attrs.colorpickerInline) ? attrs.colorpickerInline : false,
@@ -276,6 +277,7 @@ angular.module('colorpicker.module', [])
               componentSizePx = componentSize + 'px',
               inputTemplate = withInput ? '<input type="text" name="colorpicker-input" spellcheck="false">' : '',
               closeButton = !inline ? '<button type="button" class="close close-colorpicker">&times;</button>' : '',
+              resetButton = !inline ? '<button type="button" class="reset reset-colorpicker">reset</button>' : '',
               template =
                   '<div class="colorpicker dropdown">' +
                       '<div class="dropdown-menu">' +
@@ -285,6 +287,7 @@ angular.module('colorpicker.module', [])
                       '<colorpicker-preview></colorpicker-preview>' +
                       inputTemplate +
                       closeButton +
+                      resetButton +
                       '</div>' +
                       '</div>',
               colorpickerTemplate = angular.element(template),
@@ -500,8 +503,8 @@ angular.module('colorpicker.module', [])
           }
 
           function showColorpickerTemplate() {
-
             if (!colorpickerTemplate.hasClass('colorpicker-visible')) {
+              oldColor = elem.val();
               update();
               colorpickerTemplate
                 .addClass('colorpicker-visible')
@@ -558,8 +561,25 @@ angular.module('colorpicker.module', [])
             }
           }
 
-          colorpickerTemplate.find('button').on('click', function () {
+          function resetColorpicker() {
+            elem.val(oldColor);
+            if (ngModel) {
+              $scope.$apply(ngModel.$setViewValue(oldColor));
+            }
+            if (withInput) {
+              pickerColorInput.val(oldColor);
+            }
+
+            update();
+            // return false;
+          }
+
+          colorpickerTemplate.find('button.close-colorpicker').on('click', function () {
             hideColorpickerTemplate();
+          });
+
+          colorpickerTemplate.find('button.reset-colorpicker').on('click', function () {
+            resetColorpicker();
           });
 
           if (attrs.colorpickerIsOpen) {
